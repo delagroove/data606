@@ -1,0 +1,29 @@
+---
+title: "Assignment9-607"
+author: "Alvaro Bueno"
+date: "10/28/2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(jsonlite)
+library(knitr)
+```
+## Assignment 9
+
+> The Library Jsonlite already offers an interface to set the Json object and format it as data frame, also after getting the API key from new york times and exploring the documentation, I'm lucky to know that only a GET call with the API key as parameter will be enough to fetch results. Other API key only support other types of messages as POST or the API key needs to go attached as part of the header message, but not this one (I believe there must be methods inside the jsonlite library to work with these APIs as well)
+
+```{r mostviewed}
+mostviewed <- fromJSON('https://api.nytimes.com/svc/mostpopular/v2/mostviewed/Arts/7.json?api_key=30667620d6b14b0fb6a83e32f9fc186b')
+
+displayResults <- mostviewed$results[,6:8]
+kable(displayResults)
+
+```
+
+> with the number '7' at the end of the request, I only get the results from the last 7 days.
+
+> I won't display the whole table for legibility issues. but the data is there.
