@@ -1,0 +1,38 @@
+---
+title: "Netflix_report"
+author: "Alvaro Bueno"
+date: "11/8/2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Netflix
+
+netflix uses a recommendation engine for its more than 100 million users, taking into account the already extensive catalog of movies watched by them, suggestion from hired content professionals and a machine learning powered algorithm that combines and tunes this information.
+
+### Who are your target users
+
+Netflix target users are all users that watch video over the internet
+
+### What are their key goals
+
+The Key goal is that no matter the user demographic or interest, He/she can always find something interesting to watch and keep engaged.
+
+### How can you help to accomplish this goals
+
+The machine learning algorithm helps to achieve that, along with the feedback we give to a movie or series at the end of it. The Propietary algorithm tries to pool something new out of a queue of content that offers similar tastes, it can be because it's a category previously viewed and highly rated by the user and their network, or because it's some content that came as a result of two categories that you previously liked and the algorithm is suggesting it as a new thing. 
+
+### reverse engineering, suggestions.
+
+According to Wired, the viewers are split into more than 2000 taste groups which are fed with the recommendations of the system based on the algorithm and the human content managers behind it.
+The data that is feeded into the algorithm is divided into 2 types, explicit and implicit, Explicit is pretty much the direct feedback you provide at the end of movies, comment from your network and User interface scenarios like bounces (watch 1 minute of a program and then go back to the menu).
+The implicit data is like when Netflix suggest a series and you start binge watching it. A lot of the useful data is coming from implicit sources.
+
+Before Netflix started to offer its own content, you could see complex categories chiming in when looking at broad movie genres, such as comedy. eventually you start to see more details like movies with strong female leads or mockumentaries for example.
+
+I think this helped Netflix to start their own content with the correct topics, characters and plots in order to develop engaging series, think of a trend in technology plots as a spark to bring in series like sense8 and Black Mirror, or Mystery and 80s nostalgia to come up with Stranger things.
+
+I would suggest Netflix to keep tapping into this uncharted categories and develop its own content, some of them, like a good diversified portfolio will be the stars and pay off, think of the resurgence and boom of the Stand-up comedy shows in the last years, where their own produced shows are helping capitalize this category.
