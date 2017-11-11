@@ -1,0 +1,106 @@
+---
+intitle: "Project4_607"
+author: "Alvaro Bueno"
+date: "11/9/2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library('RTextTools')
+library('tm')
+library('klaR')
+```
+
+## Predictive classifier for Spam Email
+
+```{r hamspam}
+
+hamdir <- '/Users/alvbueno/Sites/dataScience/ham'
+spamdir <- '/Users/alvbueno/Sites/dataScience/spam'
+
+hamfiles <- list.files(hamdir)
+spamfiles <- list.files(spamdir)
+
+hamlist <- NA
+spamlist <- NA
+
+for(i in 1:length(hamfiles)){
+  thelines <- readLines(paste(hamdir, hamfiles[i], sep="/"), encoding = 'UTF-8')
+  thelist <- list(paste(thelines, collapse="\n"))
+  hamlist <- c(hamlist, thelist)
+}
+
+hamdataframe <- as.data.frame(unlist(hamlist), stringsAsFactors = FALSE)
+hamdataframe$type <- "ham"
+colnames(hamdataframe) <- c('data', 'type')
+
+for(i in 1:length(spamfiles)){
+  thelines <- readLines(paste(spamdir, spamfiles[i], sep="/"), encoding = 'UTF-8')
+  thelist <- list(paste(thelines, collapse="\n"))
+  spamlist <- c(spamlist, thelist)
+}
+
+spamdataframe <- as.data.frame(unlist(spamlist), stringsAsFactors = FALSE)
+spamdataframe$type <- "spam"
+colnames(spamdataframe) <- c('data', 'type')
+
+thedataframe = rbind(hamdataframe, spamdataframe)
+```
+
+## process train and test corpus
+
+```{r process}
+
+sample_size <- floor(0.6 * nrow(thedataframe))
+set.seed(123)
+train_ind <- sample(seq_len(nrow(thedataframe)), size = sample_size)
+
+train_df <- thedataframe[train_ind,]
+test_df <- thedataframe[-train_ind,]
+
+spam_count <-subset(thedataframe, thedataframe$type =='spam')
+ham_count <-subset(thedataframe, thedataframe$type =='ham')
+
+train_corpus <- Corpus(VectorSource(train_df$data))
+test_corpus <- Corpus(VectorSource(test_df$data))
+
+train_corpus<- tm_map(train_corpus,removePunctuation)
+train_corpus <- tm_map(train_corpus, removeNumbers)
+train_corpus <- tm_map(train_corpus, stripWhitespace)
+
+test_corpus<- tm_map(test_corpus, removePunctuation)
+test_corpus <- tm_map(test_corpus, removeNumbers)
+test_corpus <- tm_map(test_corpus, stripWhitespace)
+
+test_term_matrix <- DocumentTermMatrix(test_corpus)
+train_term_matrix <- DocumentTermMatrix(train_corpus)
+
+```
+
+
+```{r classifier}
+
+classifier <- maxent::maxent(train_term_matrix, factor(train_df$type))
+test_pred <- predict(classifier, feature_matrix = test_term_matrix)
+
+
+function show_results(x) {
+  initial_ham <- 0
+  initial_spam <- 0
+  predicted_ham <- 0
+  predicted_spam <- 0
+  
+  for(row in x) {
+    if (x$labels == 'ham'){
+      initial_ham <- initial_ham + 1
+    }
+    if (x$labels == 'spam'){
+      initial_ham <- initial_ham + 1
+    }
+  }
+}
+
+show_results(test_pred)
+
+```

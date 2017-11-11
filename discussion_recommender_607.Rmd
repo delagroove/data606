@@ -28,7 +28,7 @@ The machine learning algorithm helps to achieve that, along with the feedback we
 ### reverse engineering, suggestions.
 
 According to Wired, the viewers are split into more than 2000 taste groups which are fed with the recommendations of the system based on the algorithm and the human content managers behind it.
-
+sa
 The data that is feeded into the algorithm is divided into 2 types, explicit and implicit, Explicit is pretty much the direct feedback you provide at the end of movies, comment from your network and User interface scenarios like bounces (watch 1 minute of a program and then go back to the menu).
 The implicit data is like when Netflix suggest a series and you start binge watching it. A lot of the useful data is coming from implicit sources.
 
