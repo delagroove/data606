@@ -1,0 +1,52 @@
+---
+title: "Sql to graph"
+author: "Alvaro Bueno"
+date: "11/17/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## SQL To Graph walkthrough
+
+By following the Neo4J tutorial, i have a direction on how do do the process, however the COPY command only runs in PostgresQL and not in MYSQL, so in order to export the csv tbales i'm using the following commands and then saving the output to excel.
+
+> echo 'SELECT * FROM votes' | mysql -B -uroot movies
+
+> echo 'SELECT * FROM movies' | mysql -B -uroot movies
+
+> echo 'SELECT * FROM users' | mysql -B -uroot movies
+
+with the 3 CSVs we proceed to create the Neo4J graph, using the following cypher code
+
+```{cypher}
+// Create movies
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/delagroove/dataScience/master/movies.csv" AS row
+CREATE (:Movie {id: row.id, name: row.name, description: row.description, has_female_lead: row.has_female_lead, genre: row.genre});
+
+// Create users
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/delagroove/dataScience/master/users.csv" AS row
+CREATE (:User {id: row.id, name: row.name});
+
+// Create votes
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/delagroove/dataScience/master/votes.csv" AS row
+CREATE (:Vote {user_id: row.user_id, movie_id: row.movie_id, rating: row.rating});
+
+CREATE INDEX ON :Movie(id);
+CREATE INDEX ON :User(id);
+CREATE INDEX ON :Vote(user_id, movie_id);
+
+
+USING PERIODIC COMMIT
+LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/delagroove/dataScience/master/votes.csv" AS row
+MATCH (user:User {id: row.user_id})
+MATCH (movie:Movie {id: row.movie_id})
+MERGE (user)-[:VOTE_FOR]->(movie);
+```
+
+![the resulting graph](https://raw.githubusercontent.com/delagroove/dataScience/master/neo4J.png)
