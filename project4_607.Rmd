@@ -1,8 +1,10 @@
 ---
-intitle: "Project4_607"
 author: "Alvaro Bueno"
 date: "11/9/2017"
-output: pdf_document
+intitle: Project4_607
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
