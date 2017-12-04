@@ -1,0 +1,172 @@
+---
+title: "Final Project - 606: Analysis on NYC restaurant scores"
+author: "Alvaro Bueno"
+output:
+  html_document:
+    toc: true
+    theme: cerulean
+    toc_float: true
+---
+
+```{r echo=FALSE}
+# load data
+library(plyr)
+set.seed(12345)
+all_inspections <- read.csv("https://s3.amazonaws.com/data-science-606/inspections_all.csv") # 144 MB
+
+inspections_a <- read.csv("https://raw.githubusercontent.com/delagroove/dataScience/master/inspections_a.csv")
+inspections_b <- read.csv("https://raw.githubusercontent.com/delagroove/dataScience/master/inspections_b.csv")
+inspections_c <- read.csv("https://raw.githubusercontent.com/delagroove/dataScience/master/inspections_c.csv")
+inspections_other <- read.csv("https://raw.githubusercontent.com/delagroove/dataScience/master/inspections_other_grades.csv")
+
+```
+
+## 1 - Introduction
+
+I have been curious about the Restaurant inspections that lead to Letter in the doors of these establishments, so the analysis will consist in determine if there's any relation/bias between the grade and the cuisine description. Since the process run by the Department of Health is a very technical one, seems there's no connection between the variables, but we are going to look at the data to see what it says.
+
+I care about this because the system is an helpful tool for consumers but I don't understand how it runs and this exercise aims to do that.
+
+I think others should care too because this can gives an idea and how the lettering system works and be informed as well.
+
+According to the Blue Book [http://www1.nyc.gov/assets/doh/downloads/pdf/rii/blue-book.pdf] The process is very technical and every restaurant can earn an A, but certain procedures like Leavening dough, Fermenting, Dry-ageing beef or Marinating foods typical of certain cuisines might be considered as violations. Taking the Cuisine Description as the exploratory variable could help to clarify that.
+
+## 2 - Data
+
+here are 390000+ inspection results in a data set provided by the city of NYC.
+
+I divided those records by 4 datasets, those with a grade of A (quivalent to 0-13 points), those with a grade of B (14-26 points), those with a grade of C (27 points or higher) and those with no letter assigned or pending review. after that we will randomize and take N = 1000 cases in order to have equal size groups.
+
+_Data collection_: The data was collected by the Department of Health and Public Safety inspectors from 2013 to the present and it was sourced from NYC Open data.
+
+_Cases_: Every case represents an entry for a restaurant made by an inspector, this can be a violation, a note that indicates no violation, an establisment closure or re-open, a case also can have a grade, a restarant can have multiple cases per day.
+
+_Variables_: the Grade of the Inspection, shown as GRADE, it's a categorical variable and will act as the response variable.
+
+the Cuisine Description, will be the explanatory variable, that is a categorical variable as well.
+
+_Type of study_: this is an observational study as this is already collected and published. It is not captured randomly as every restaurant owner know he will face an inspection every year.
+
+_scope of inference_ : the randomization after breaking the groups plus the group size of 1000 cases which is less than 10% of the population of restaurant in NYC will allow us to do inference on the population of restaurants.
+
+## 3 - Exploratory data analysis
+```{r}
+
+a_5000 <- inspections_a[sample(nrow(inspections_a), 5000),]
+b_5000 <- inspections_b[sample(nrow(inspections_b), 5000),]
+c_5000 <- inspections_c[sample(nrow(inspections_c), 5000),]
+other_5000 <- inspections_other[sample(nrow(inspections_other), 5000),]
+
+hist(all_inspections$SCORE, breaks=100)
+hist(all_inspections[all_inspections$SCORE < 30,]$SCORE, breaks=100, xlab="score", main="Frequency of score > all entries")
+
+```
+> The bulk of scores goes from 0 to 20, the Grades of the mejority of restaurants are A or B, which tells about the effort done by the inspectors and restaurants to deliver a system that searchs for better quality in the new york restaurant industry. Note that there's a big slope at 13, which is the number between an A and a B grade.
+
+```{r}
+summary(all_inspections$SCORE)
+```
+
+  
+In order to reduce outliers i will filter values with scores higher than 30, because for practical reasons scores higher than 30 are worse than a C in that case the restaurant owner can opt to set a 'Pending' sign instead of the letter.
+
+```{r}
+summary(all_inspections[all_inspections$SCORE < 30,]$SCORE)
+```
+
+
+```{r}
+all_american = subset(all_inspections, CUISINE.DESCRIPTION == 'American')
+all_chinese = subset(all_inspections, CUISINE.DESCRIPTION == 'Chinese')
+all_italian = subset(all_inspections, CUISINE.DESCRIPTION == 'Italian')
+all_mexican = subset(all_inspections, CUISINE.DESCRIPTION == 'Mexican')
+
+par(mfrow=c(2,2))
+plot(all_american$GRADE, main = "American")
+plot(all_chinese$GRADE, main = "Chinese")
+plot(all_italian$GRADE, main = "Italian")
+plot(all_mexican$GRADE, main = "Mexican")
+```
+
+Apart from the big amount of B grades from the chinese comparing to the A grades, there's nothing remoarkable about these plots, which are all very similar. The big bar at the left is for Blank grades, which are given when multiple violations are issues so only one of the violations holds the grade.
+
+> the most popular violations are the same across different cuisines
+
+```{r}
+counts_american <- count(all_american, 'VIOLATION.DESCRIPTION')
+counts_chinese <- count(all_chinese, 'VIOLATION.DESCRIPTION')
+counts_italian <- count(all_italian, 'VIOLATION.DESCRIPTION')
+counts_mexican <- count(all_mexican, 'VIOLATION.DESCRIPTION')
+
+head(counts_american[order(-counts_american$freq),])
+head(counts_chinese[order(-counts_chinese$freq),])
+head(counts_italian[order(-counts_italian$freq),])
+head(counts_mexican[order(-counts_mexican$freq),])
+
+
+
+
+```
+
+```{r}
+
+# ggplot(a_5000, aes(x = CUISINE.DESCRIPTION)) + geom_bar()
+t1 <- table(a_5000$CUISINE.DESCRIPTION)
+t2 <- table(b_5000$CUISINE.DESCRIPTION)
+t3 <- table(c_5000$CUISINE.DESCRIPTION)
+t4 <- table(other_5000$CUISINE.DESCRIPTION)
+# to check the most popular cuisines
+par(mfrow=c(4,1))
+plot(sort(t1, decreasing = TRUE)[1:10], type = 'h', cex.axis=0.8 )
+plot(sort(t2, decreasing = TRUE)[1:10], type = 'h', cex.axis=0.8 )
+plot(sort(t3, decreasing = TRUE)[1:10], type = 'h', cex.axis=0.8 )
+plot(sort(t4, decreasing = TRUE)[1:10], type = 'h', cex.axis=0.8 )
+```
+
+> the biggest categories are american, chinese, cafe/tea, italian, pizza and mexican across all different grades, some of them vary their position across grades, but it keeps the order for the top 2, american and chinese.
+
+```{r}
+filtered_inspections <- subset(all_inspections, all_inspections$SCORE < 30)
+inspections_1000 <- filtered_inspections[sample(nrow(filtered_inspections), 1000),]
+hist(inspections_1000$SCORE, breaks=100, xlab="score", main="Frequency of score > random sample of 2000")
+summary(inspections_1000$SCORE)
+sd(inspections_1000$SCORE)
+```
+
+> the sample taken is random, independent and represent less than 10% of the population (there are approximately 24000 restaurants in nyc)
+
+we calculate $\ SE = \sigma / \sqrt n$ as follows: $\ SE = 6.7146 / \sqrt 1000 $ = 0.21233
+
+we can be confident that we have 95% values in this range $\ 14.61 \pm 1.96 * 0.21233 $
+(14.1938, 15.0261)
+
+with 99% confidence:$\ 14.61 \pm 2.58 * 0.21233 $
+(14.0621, 15.157)
+
+A lot of cases struggle to get into the A grade and several cases are around these values. 
+
+## 4 - Inference
+
+Using linear regression to determine the different cuisines load to the overall score total..
+```{r}
+all4 <- rbind(all_american, all_chinese)
+all4 <- rbind(all4, all_mexican)
+all4 <- rbind(all4, all_italian)
+all4 <- rbind(all4, all_american)
+res <- lm(SCORE ~ CUISINE.DESCRIPTION, all4 )
+summary(res)
+```
+using only the coefficients of the most important cuisines we can get our regression formula:
+$\ 18.0581 + 2.3770(chinese) + 0.5424(Italian) + 1.8869(Mexican) $
+
+The way to interpret this is that some cuisines have made more violations in the past, hence the positive slope, but none of this values is determinant to predict the score.
+
+## 5 - Conclusion: 
+
+The Cuisine description is not determinant of the score in any way, the process to calculate the score is more oriented to food handling, hygiene and pest control, different food preparations or storaged goods do not explicitely alter this value.
+
+## 6 - References:
+
+[http://www1.nyc.gov/assets/doh/downloads/pdf/rii/blue-book.pdf]
+
+[https://data.cityofnewyork.us/Health/DOHMH-New-York-City-Restaurant-Inspection-Results/xx67-kt59]
