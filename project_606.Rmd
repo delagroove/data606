@@ -17,13 +17,13 @@ all_inspections <- read.csv("https://s3.amazonaws.com/data-science-606/inspectio
 inspections_a <- read.csv("https://raw.githubusercontent.com/delagroove/dataScience/master/inspections_a.csv")
 inspections_b <- read.csv("https://raw.githubusercontent.com/delagroove/dataScience/master/inspections_b.csv")
 inspections_c <- read.csv("https://raw.githubusercontent.com/delagroove/dataScience/master/inspections_c.csv")
-inspections_other <- read.csv("https://raw.githubusercontent.com/delagroove/dataScience/master/inspections_other_grades.csv")
+inspections_other <- read.csv("https://raw.githubusercontent.com/delagroove/dataScience/master/inspections_other.csv")
 
 ```
 
 ## 1 - Introduction
 
-I have been curious about the Restaurant inspections that lead to Letter in the doors of these establishments, so the analysis will consist in determine if there's any relation/bias between the grade and the cuisine description. Since the process run by the Department of Health is a very technical one, seems there's no connection between the variables, but we are going to look at the data to see what it says.
+I have been curious about the Restaurant inspections that lead to letters in the doors of these establishments, so the analysis will consist in determine if there's any relation/bias between the grade and the cuisine description. Since the process run by the Department of Health is a very technical one, seems there's no connection between the variables, but we are going to look at the data to see what it says.
 
 I care about this because the system is an helpful tool for consumers but I don't understand how it runs and this exercise aims to do that.
 
@@ -128,7 +128,7 @@ plot(sort(t4, decreasing = TRUE)[1:10], type = 'h', cex.axis=0.8 )
 ```{r}
 filtered_inspections <- subset(all_inspections, all_inspections$SCORE < 30)
 inspections_1000 <- filtered_inspections[sample(nrow(filtered_inspections), 1000),]
-hist(inspections_1000$SCORE, breaks=100, xlab="score", main="Frequency of score > random sample of 2000")
+hist(inspections_1000$SCORE, breaks=100, xlab="score", main="Frequency of score > random sample of 1000")
 summary(inspections_1000$SCORE)
 sd(inspections_1000$SCORE)
 ```
@@ -161,11 +161,11 @@ $\ 18.0581 + 2.3770(chinese) + 0.5424(Italian) + 1.8869(Mexican) $
 
 The way to interpret this is that some cuisines have made more violations in the past, hence the positive slope, but none of this values is determinant to predict the score.
 
-## 5 - Conclusion: 
+## 5 - Conclusion 
 
 The Cuisine description is not determinant of the score in any way, the process to calculate the score is more oriented to food handling, hygiene and pest control, different food preparations or storaged goods do not explicitely alter this value.
 
-## 6 - References:
+## 6 - References
 
 [http://www1.nyc.gov/assets/doh/downloads/pdf/rii/blue-book.pdf]
 
