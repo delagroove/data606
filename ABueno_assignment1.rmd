@@ -1,0 +1,70 @@
+---
+title: "Assignment1_605"
+author: "Alvaro Bueno"
+date: "2/3/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Problem set #1
+
+
+1) u.v = (0.5)*3 + (0.5)*-4 = 1.5 - 2  = -0.5
+
+2) the lenghts of both vectors are 2x1
+
+3) 3u - 2v = [1.5; 1.5] - [6;-8] = [-4.5; 9.5]
+
+4) |u| = sqrt(0.5^2 + 0.5^2) = 0.7071
+   |v| = sqrt(3^2 + (-4)^2) = 5
+   
+   using the formula  θ = arccos (u.v / |u||v|) = arccos (-0.5/0.7071*5) = 1.0100168
+   
+   approximately 57.86 degrees.
+
+
+## Problem set #2
+```{r}
+
+gauss = function(A, b){
+  r <- dim(A)[1]
+  c <- dim(A)[2] + dim(b)[2] # full size
+  full <- matrix(c(A, b), nrow=r, ncol=c)
+  
+  # construct a upper triangular matrix,with that, the last row will be reduced.
+  for (j in 1:(c-2)) {
+    for (i in (j+1):r) {
+      full[i,] <- full[i,]-full[j,]*full[i,j]/full[j,j]  
+    }
+  }
+  full[r,] <- full[r,] / full[r,r]
+  
+  #setting up a vector with the response, the last value, the one already reduced.
+  
+  res <- numeric(r)
+  res[r] = full[r,c]
+ 
+  # reducing the last part of the matrix 
+  for (k in (r-1):1) {
+    t = 0
+    for (m in (k+1):r) {
+      s = full[k,m] * res[m]
+      t = t + s
+    }
+    res[k] = (full[k,c] - t) / full[k,k]
+  }
+  res <- round(res,2)
+  return(res)
+}
+
+
+```
+
+```{r}
+A = matrix(c(1,1,3,2,-1,5,-1,-2,4), nrow=3, ncol=3, byrow=T)
+b = matrix(c(1,2,6),nrow=3, byrow=T)
+gauss(A,b)
+```
+
