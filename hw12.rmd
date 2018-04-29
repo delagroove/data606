@@ -1,0 +1,256 @@
+---
+title: "hw12"
+author: "Alvaro Bueno"
+date: "4/29/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+The attached who.csv dataset contains real-world data from 2008. The variables included follow.
+
+Country: name of the country
+
+LifeExp: average life expectancy for the country in years
+
+InfantSurvival: proportion of those surviving to one year or more
+
+Under5Survival: proportion of those surviving to five years or more
+
+TBFree: proportion of the population without TB.
+
+PropMD: proportion of the population who are MDs
+
+PropRN: proportion of the population who are RNs
+
+PersExp: mean personal expenditures on healthcare in US dollars at average exchange rate
+
+GovtExp: mean government expenditures per capita on healthcare, US dollars at average exchange rate
+
+TotExp: sum of personal and government expenditures.
+
+```{r}
+who <- read.csv("https://raw.githubusercontent.com/YunMai-SPS/DATA605_homework/master/data605_week12/who.csv?token=AX_Wu-t3_xslaF9_0F270eMa2nmi-hwEks5aG1hawA%3D%3D")
+```
+### 1.
+
+Provide a scatterplot of LifeExp~TotExp, and run simple linear regression. Do not transform the variables. Provide and interpret the F statistics, R^2, standard error,and p-values only. Discuss whether the assumptions of simple linear regression met.
+
+```{r}
+plot(who$TotExp,who$LifeExp)
+```
+
+From the plot, it is hard to find a trend showing there is correlation between average life expectancy for the country( LifeExp) and sum of personal and government expenditures( TotExp).
+
+Simple linear regression
+```{r}
+lifeexp.lm <- lm(who$LifeExp ~ who$TotExp, data=who)
+summary(lifeexp.lm)
+```
+
+ANOVA
+
+```{r}
+lifeexp_lm_anova <- anova(lifeexp.lm)
+lifeexp_lm_anova
+```
+
+
+Linear regression model: LifeExp∼6.475+6.2975×TotExp
+
+F value : 65.264
+
+R^2: 0.2577
+
+standard error: 7.795e-06
+
+p-values: 7.714e-14
+
+R square indicates that there is weak correlation between LifeExp and TotExp.
+
+Residual Analysis
+
+Use the residual analysis techniques to check the validity of the assumptions.
+
+```{r}
+plot(fitted(lifeexp.lm),resid(lifeexp.lm))
+abline(0,0)
+```
+
+```{r}
+qqnorm(resid(lifeexp.lm))
+qqline(resid(lifeexp.lm))
+```
+
+In the scatter plot for residules, the variances of residuals are not uniformly scattered about zero. Additionally, The residuals tend to decrease as moving to the right. Overall, this plot tells us that using the sum of personal and government expenditures as the sole predictor in the regression model does not sufficiently or fully explain the data.
+
+The Q-Q plot shows that the residuals did not tightly follow the indicated line. The two ends diverge significantly from that line, This behavior indicates that the residuals are not normally distributed,suggesting that using only the sum of personal and government expenditures as a predictor in the model is insufficient to explain the data.
+
+We may be able to construct a model that produces tighter residual values and better predictions by including more predictors.
+
+###2.
+
+Raise life expectancy to the 4.6 power (i.e., LifeExp^4.6). Raise total expenditures to the 0.06 power (nearly a log transform, TotExp^.06). Plot LifeExp^4.6 as a function of TotExp^.06, and re-run the simple regression model using the transformed variables. Provide and interpret the F statistics, R^2, standard error, and p-values. Which model is “better?”
+
+```{r}
+t_LifeExp<- who$LifeExp^4.6
+t_TotExp<- who$TotExp^.06
+plot(t_TotExp,t_LifeExp)
+```
+
+From the plot, we can see a trend showing there is correlation between the transformed average life expectancy for the country(t_LifeExp) and the transformed sum of personal and government expenditures(t_TotExp).
+
+Simple linear regression
+```{r}
+tlifeexp.lm <- lm(t_LifeExp ~ t_TotExp, data=who)
+summary(tlifeexp.lm)
+```
+
+### ANOVA
+
+```{r}
+tlifeexp_lm_anova <- anova(tlifeexp.lm)
+tlifeexp_lm_anova
+```
+
+
+Linear regression model: LifeExp −736527910+620060216×TotExp
+
+F value : 507.7
+
+R^2: 0.7298
+
+standard error: 27518940
+
+p-values: < 2.2e-16
+
+R square indicates that there is strong correlation between LifeExp and TotExp.
+
+Residual Analysis
+
+Use the residual analysis techniques to check the validity of the assumptions.
+
+```{r}
+plot(fitted(tlifeexp.lm),resid(tlifeexp.lm))
+abline(0,0)
+
+
+qqnorm(resid(tlifeexp.lm))
+qqline(resid(tlifeexp.lm))
+```
+
+The variances of residuals areUniformly scattered about zero.
+
+The Q-Q plot shows that the residuals follow the indicated line.
+
+Taken together, the model based on the transformed varaibles are better.
+
+### 3. 
+
+Using the results from 2, forecast life expectancy when TotExp^.06 =1.5. Then forecast life expectancy when TotExp^.06=2.5.
+
+##### split the dataset into train and test sets
+```{r}
+rows <- nrow(who)
+f <- 0.5
+upper_bound <- floor(f * rows)
+permuted_who.dat <- who[sample(rows), ]
+train.dat <- permuted_who.dat[1:upper_bound, ]
+test.dat <- permuted_who.dat[(upper_bound+1):rows, ]
+#transform vairaibles as #2
+t_LifeExp <- train.dat$LifeEx^4.6
+t_TotExp <- train.dat$TotExp^0.06
+
+#computing the model's coefficients as training the regression model.
+tnlifeexp.lm <- lm(t_LifeExp ~ t_TotExp, data=train.dat )
+
+#uses the model obtained from above to compute the predicted outputs
+predicted.dat <- predict(tnlifeexp.lm, newdata=test.dat)
+
+#finc the difference between the predicted and measured performance
+delta <- predicted.dat - test.dat$LifeEx^4.6
+
+#use t-test to see how well a model trained on the train.dat data set predicted the performance of the processors in the test.dat data set
+t.test(delta, conf.level = 0.95)
+```
+
+
+we obtain a 95 percent confidence interval of [-67662359, 24551445]. This is a reasonably tight confidence interval that includes zero. Thus, we conclude that the model is reasonably good at predicting values in the test.dat data set when trained on the train.dat data set.
+
+When TotExp^.06 =1.5
+
+```{r}
+
+LifeExp_1.5 <- -736527910 + 620060216 * 1.5
+cat("life expectancy when TotExp^.06 =1.5 is ",LifeExp_1.5^(1/4.6))
+```
+
+When TotExp^.06 =2.5
+```{r}
+LifeExp_2.5 <- -736527910 + 620060216 * 2.5
+cat("life expectancy when TotExp^.06 =2.5 is ",LifeExp_2.5^(1/4.6))
+```
+## life expectancy when TotExp^.06 =2.5 is  86.50645
+
+### 4.
+Build the following multiple regression model and interpret the F Statistics, R^2, standard error, and p-values. How good is the model?
+```{r}
+LifeExp = b0+b1 x PropMd + b2 x TotExp +b3 x PropMD x TotExp
+```
+multiple regression model
+
+```{r}
+mllifeexp.lm <- lm(LifeExp ~ PropMD+TotExp+(PropMD*TotExp), data=who)
+summary(mllifeexp.lm )
+```
+
+ANOVA
+
+```{r}
+mllifeexp_lm_anova <- anova(mllifeexp.lm)
+mllifeexp_lm_anova
+```
+
+Linear regression model: LifeExp∼6.277+1.4973×PropMd+7.233−5×TotExp−6.026e−3×PropMDxTotExp
+
+F-statistic: 34.49 on 3 and 186 DF
+
+R^2: 0.3574
+
+standard error: 27518940
+
+p-values: < 2.2e-16
+
+R square indicates that there is strong correlation between LifeExp and TotExp.
+
+### Residual Analysis
+
+Use the residual analysis techniques to check the validity of the assumptions.
+
+```{r}
+plot(fitted(mllifeexp.lm),resid(mllifeexp.lm))
+abline(0,0)
+
+
+qqnorm(resid(mllifeexp.lm))
+qqline(resid(mllifeexp.lm))
+```
+
+In the scatter plot for residules, the variances of residuals are not uniformly scattered about zero. Additionally, The residuals tend to decrease as moving to the right. Overall, this plot tells us that using the sum of personal and government expenditures, proportion of the population who are MDs, and the products of these two variables as the predictors in the regression model does not sufficiently or fully explain the data.
+
+The Q-Q plot shows that the residuals did not tightly follow the indicated line. The two ends diverge significantly from that line, This behavior indicates that the residuals are not normally distributed,suggesting that using sum of personal and government expenditures, proportion of the population who are MDs, and the products of these two variables as a predictors in the model is insufficient to explain the data.
+
+We may be able to construct a model that produces tighter residual values and better predictions by including more predictors.
+
+###5.
+Forecast LifeExp when PropMD=.03 and TotExp = 14. Does this forecast seem realistic? Why or why not?
+
+```{r}
+lifeexp<-6.277 + 1.497^3 * .03 + 7.233^(-5) * 14 -6.026^(-3) * .03 * 14 
+```
+
+
+The forecast, average life expectancy for the country in years, being only 6 does not seem realistic. It is not hard to understand that a not valid repression model is not appropreate to be used in predicting average life expectancy for the country.
