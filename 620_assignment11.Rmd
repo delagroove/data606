@@ -3,8 +3,8 @@ author: "Alvaro Bueno"
 date: "11/11/2018"
 intitle: Assignment 11 - 620
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
