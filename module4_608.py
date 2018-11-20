@@ -20,10 +20,11 @@ app.layout = html.Div([
         dcc.Dropdown(id='boro',
                      options=[{'label': i, 'value': i} for i in boroughs],
                      placeholder='Borough: '),
+        dcc.Graph(id='health_prop'),
         dcc.Dropdown(id='spc',
                      options=[{'label': i, 'value': i} for i in species],
                      placeholder='Species: '),
-        dcc.Graph(id='health_prop'),
+
         dcc.Graph(id='steward')],
         style={'columnCount': 2}),
 
@@ -36,19 +37,41 @@ app.layout = html.Div([
     [dash.dependencies.Input('boro', 'value'),
      dash.dependencies.Input('spc', 'value')])
 
+
+
 def get_data(boro,spc):
-    url = ('https://data.cityofnewyork.us/resource/nwxe-4ae8.json?' +\
-        '$select=steward,health,count(tree_id)' +\
-        '&$where=boroname=\'' + boro + '\'&spc_common=\'' + spc + '\'' +
-        '&$group=steward,health' +\
-        '&$order=steward,health').replace(' ', '%20')
+    if spc is None:
+        url = ('https://data.cityofnewyork.us/resource/nwxe-4ae8.json?' +\
+            '$select=steward,health,count(tree_id)' +\
+            '&$where=boroname=\'' + boro + '\'' +
+            '&$group=steward,health' +\
+            '&$order=steward,health').replace(' ', '%20')
+    else:
+        url = ('https://data.cityofnewyork.us/resource/nwxe-4ae8.json?' +\
+            '$select=steward,health,count(tree_id)' +\
+            '&$where=boroname=\'' + boro + '\'&spc_common=\'' + spc + '\'' +
+            '&$group=steward,health' +\
+            '&$order=steward,health').replace(' ', '%20')
 
     df = pd.read_json(url)
-
+    print df['steward']
+    categories = []
     # map the names to the current value in the db and sort them
-    df['steward'] = df['steward'].replace({'1or2':'1 or 2', '3or4':'3 or 4', '4orMore':'4 or More','None':'None'})
+    if None in df['steward']:
+        df['steward'] = df['steward'].replace({'None':'None'})
+        categories.push('None');
+    if '1or2' in df['steward']:
+        df['steward'] = df['steward'].replace({'1or2':'1 or 2'})
+        categories.push('1 or 2');
+    if '3or4' in df['steward']:
+        df['steward'] = df['steward'].replace({'3or4':'3 or 4'})
+        categories.push('3 or 4');
+    if '4orMore' in df['steward']:
+        df['steward'] = df['steward'].replace({'4orMore':'4 or More'})
+        categories.push('4 or More');
+    print df['steward']
     df['steward'] = df['steward'].astype('category')
-    df['steward'] = df['steward'].cat.reorder_categories(['None','1 or 2','3 or 4','4 or More'], ordered=True)
+    df['steward'] = df['steward'].cat.reorder_categories(categories, ordered=True)
 
     return df.to_json(orient='split')
 
